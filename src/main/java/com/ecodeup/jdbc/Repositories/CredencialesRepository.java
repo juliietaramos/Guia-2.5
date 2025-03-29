@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class CredencialesRepository implements Repository<CredencialesEntity> {
@@ -70,8 +71,8 @@ public class CredencialesRepository implements Repository<CredencialesEntity> {
                             resultSet.getString(3),
                             resultSet.getString(4),
                             ENUM_permiso.valueOf(resultSet.getString(5))); // Conversión de String a Enum
-                            //resultSet.getString(3), // el dato en la bbd es de tipo string, pero la clase tiene atributo tipo enum
-                            credencialesEntityArrayList.add(nuevo);
+                    //resultSet.getString(3), // el dato en la bbd es de tipo string, pero la clase tiene atributo tipo enum
+                    credencialesEntityArrayList.add(nuevo);
                 }
             }
         } catch (SQLException e) {
@@ -82,6 +83,27 @@ public class CredencialesRepository implements Repository<CredencialesEntity> {
 
     @Override
     public Optional<CredencialesEntity> findById(Integer id) {
+        String sql = "SELECT * FROM credenciales WHERE id_usuario = ?;";
+        try (Connection connection = SQLiteConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) { //PREGUNTAR COMO HAGO SI HAY + DE UNA CUENTA POR IDUSUARIo
+                    return Optional.of(new CredencialesEntity(
+                            resultSet.getInt(1),
+                            resultSet.getInt(2),
+                            resultSet.getString(3),
+                            resultSet.getString(4),
+                            ENUM_permiso.valueOf(resultSet.getString(5))));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al buscar el usuario ingresado. " + e.getMessage());
+        } catch (NoSuchElementException e) {
+            System.out.println("No se encontro el usuario ingresado. " + e.getMessage());
+        }
         return Optional.empty();
     }
 

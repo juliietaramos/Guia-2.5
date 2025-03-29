@@ -7,6 +7,7 @@ import com.ecodeup.jdbc.Enum.ENUM_tipo;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class CuentasRepository implements Repository <CuentasEntity> {
@@ -77,6 +78,27 @@ public class CuentasRepository implements Repository <CuentasEntity> {
 
     @Override
     public Optional<CuentasEntity> findById(Integer id) {
+        String sql = "SELECT * FROM cuentas WHERE id_usuario = ?;";
+        try(Connection connection = SQLiteConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1,id);
+            try(ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) { //PREGUNTAR COMO HAGO SI HAY + DE UNA CUENTA POR IDUSUARIo
+                    return Optional.of(new CuentasEntity(
+                            resultSet.getInt(1),
+                            resultSet.getInt(2),
+                            ENUM_tipo.valueOf(resultSet.getString(3)),
+                            resultSet.getDouble(4),
+                            resultSet.getTimestamp(5).toLocalDateTime()));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }catch (SQLException e){
+            System.out.println("Error al buscar el usuario ingresado. " + e.getMessage());
+        }catch (NoSuchElementException e){
+            System.out.println("No se encontro el usuario ingresado. " + e.getMessage());
+        }
         return Optional.empty();
     }
 

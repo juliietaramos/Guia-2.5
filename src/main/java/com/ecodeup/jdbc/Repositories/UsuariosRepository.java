@@ -7,6 +7,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class UsuariosRepository implements Repository<UsuariosEntity> {
@@ -100,6 +101,28 @@ public class UsuariosRepository implements Repository<UsuariosEntity> {
 
     @Override
     public Optional<UsuariosEntity> findById(Integer id) {
+        String sql = "SELECT * FROM usuarios WHERE id_usuario = ?;";
+        try(Connection connection = SQLiteConnection.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1,id);
+            try(ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    return Optional.of(new UsuariosEntity(
+                            resultSet.getInt("id_usuario"),
+                            resultSet.getString("nombre"),
+                            resultSet.getString("apellido"),
+                            resultSet.getString("dni"),
+                            resultSet.getString("email"),
+                            resultSet.getTimestamp("fecha_creacion").toLocalDateTime()));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }catch (SQLException e){
+            System.out.println("Error al buscar el usuario ingresado. " + e.getMessage());
+        }catch (NoSuchElementException e){
+            System.out.println("No se encontro el usuario ingresado. " + e.getMessage());
+        }
         return Optional.empty();
     }
 
