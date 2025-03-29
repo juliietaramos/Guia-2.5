@@ -2,11 +2,10 @@ package com.ecodeup.jdbc.Repositories;
 
 import com.ecodeup.jdbc.Connection.SQLiteConnection;
 import com.ecodeup.jdbc.Entities.CuentasEntity;
+import com.ecodeup.jdbc.Entities.UsuariosEntity;
+import com.ecodeup.jdbc.Enum.ENUM_tipo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -41,12 +40,39 @@ public class CuentasRepository implements Repository <CuentasEntity> {
 
     @Override
     public void deleteById(Integer id) throws SQLException {
-
+        String sql = "DELETE FROM cuentas WHERE id_usuario = ?;";
+        try(Connection connection = SQLiteConnection.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setInt(1,id);
+            int filas = preparedStatement.executeUpdate();
+            System.out.println("Se eliminaron " + filas + " cuenta/s correctamente.");
+        }catch (SQLException e){
+            System.out.println("Error al eliminar la/s cuenta/s " + e.getMessage());
+        }
     }
 
     @Override
     public ArrayList<CuentasEntity> findAll() {
-        return null;
+        ArrayList<CuentasEntity> cuentasEntityArrayList = new ArrayList<>();
+        String sql = "SELECT * FROM cuentas;";
+        try (Connection connection = SQLiteConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    CuentasEntity nuevo = new CuentasEntity(
+                            resultSet.getInt(1),
+                            resultSet.getInt(2),
+                            ENUM_tipo.valueOf(resultSet.getString(3)), // Conversión de String a Enum
+                            //resultSet.getString(3), // el dato en la bbd es de tipo string, pero la clase tiene atributo tipo enum
+                            resultSet.getDouble(4),
+                            resultSet.getTimestamp(5).toLocalDateTime());
+                    cuentasEntityArrayList.add(nuevo);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al listar a las cuentas " + e.getMessage());
+        }
+        return cuentasEntityArrayList;
     }
 
     @Override

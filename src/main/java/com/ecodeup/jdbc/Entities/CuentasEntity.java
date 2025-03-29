@@ -19,6 +19,14 @@ public class CuentasEntity {
         this.fecha_creacion = fecha_creacion;
     }
 
+    public CuentasEntity(int id, int id_usuario, ENUM_tipo tipo, Double saldo, LocalDateTime fecha_creacion) {
+        this.id = id;
+        this.id_usuario = id_usuario;
+        this.tipo = tipo;
+        this.saldo = saldo;
+        this.fecha_creacion = fecha_creacion;
+    }
+
     public CuentasEntity(int id_usuario, ENUM_tipo tipo, Double saldo) {
         this.id_usuario = id_usuario;
         this.tipo = tipo;
