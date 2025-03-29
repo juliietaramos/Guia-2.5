@@ -12,8 +12,8 @@ public class UsuariosEntity { //tabla usuarios
     private String dni;
     private String email;
     private LocalDateTime fechaDeCreacion;
-    private CredencialesEntity credencial; //un dato tipo credencial de la tabla credenciales
-    private List<CuentasEntity> listaDeCuentas; //una lista de datos de tipo cuentas de la tabla cuentas
+//    private CredencialesEntity credencial; //un dato tipo credencial de la tabla credenciales
+//    private List<CuentasEntity> listaDeCuentas; //una lista de datos de tipo cuentas de la tabla cuentas
 
     public UsuariosEntity(int id, String nombre, String apellido, String dni, String email, LocalDateTime fechaDeCreacion, CredencialesEntity credencial, List<CuentasEntity> listaDeCuentas) {
         //metodo para traerme los usuarios de la bbd
@@ -23,25 +23,31 @@ public class UsuariosEntity { //tabla usuarios
         this.dni = dni;
         this.email = email;
         this.fechaDeCreacion = fechaDeCreacion;
-        this.credencial = credencial;
-        this.listaDeCuentas = listaDeCuentas;
+//        this.credencial = credencial;
+//        this.listaDeCuentas = listaDeCuentas;
 
     }
 
-    public UsuariosEntity(String nombre, String apellido, String dni, String email, CredencialesEntity credencial) {
+    public UsuariosEntity(String nombre, String apellido, String dni, String email) {
         //metodo para enviar los usuarios a la bbd
         this.nombre = nombre;
         this.apellido = apellido;
         this.dni = dni;
         this.email = email;
-        this.fechaDeCreacion = LocalDateTime.now();
-        this.credencial = credencial;
-        this.listaDeCuentas = new ArrayList<>();
+        this.fechaDeCreacion = LocalDateTime.now(); //no me guarda la fecha, guarda numeros
+//        this.credencial = new CredencialesEntity();
+//        this.listaDeCuentas = new ArrayList<>();
     }
 
-    public UsuariosEntity() {
-        listaDeCuentas=new ArrayList<>();
+    public UsuariosEntity(int id, String nombre, String apellido, String dni, String email, LocalDateTime fechaDeCreacion) {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.dni = dni;
+        this.email = email;
+        this.fechaDeCreacion = fechaDeCreacion;
     }
+
 
     public int getId() {
         return id;
@@ -91,22 +97,6 @@ public class UsuariosEntity { //tabla usuarios
         this.fechaDeCreacion = fechaDeCreacion;
     }
 
-    public CredencialesEntity getCredencial() {
-        return credencial;
-    }
-
-    public void setCredencial(CredencialesEntity credencial) {
-        this.credencial = credencial;
-    }
-
-    public List<CuentasEntity> getListaDeCuentas() {
-        return listaDeCuentas;
-    }
-
-    public void setListaDeCuentas(List<CuentasEntity> listaDeCuentas) {
-        this.listaDeCuentas = listaDeCuentas;
-    }
-
     @Override
     public String toString() {
         return "Usuarios{" +
@@ -116,8 +106,6 @@ public class UsuariosEntity { //tabla usuarios
                 ", dni='" + dni + '\'' +
                 ", email='" + email + '\'' +
                 ", fechaDeCreacion=" + fechaDeCreacion +
-                ", credencial=" + credencial.toString() +
-                ", cuentas=" + listaDeCuentas.toString() +
                 '}';
     }
 

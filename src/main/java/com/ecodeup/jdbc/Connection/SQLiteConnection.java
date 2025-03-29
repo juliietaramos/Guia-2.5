@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class SQLiteConnection {
 
     private static  final DataSource dataSource;
-    private static final String url = "jdbc:sqlite:banco";
+    private static final String url = "jdbc:sqlite:banco.db";
 
     static {
         HikariConfig config = new HikariConfig();
@@ -21,5 +21,8 @@ public class SQLiteConnection {
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
+
+
+
 
 }
