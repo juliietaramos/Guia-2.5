@@ -9,6 +9,7 @@ import com.ecodeup.jdbc.Repositories.CredencialesRepository;
 import com.ecodeup.jdbc.Repositories.CuentasRepository;
 import com.ecodeup.jdbc.Repositories.UsuariosRepository;
 import com.ecodeup.jdbc.Services.CredencialesService;
+import com.ecodeup.jdbc.Services.CuentasService;
 import com.ecodeup.jdbc.Services.UsuariosService;
 
 import java.sql.SQLException;
@@ -19,6 +20,7 @@ public class Main {
     public static Scanner scanner = new Scanner(System.in);
     public static UsuariosService usuariosService = UsuariosService.getInstanceOf();
     public static CredencialesService credencialesService = CredencialesService.getInstanceOf();
+    public static CuentasService cuentasService = CuentasService.getInstanceOf();
 
     public static void main(String[] args) throws SQLException {
         UsuariosEntity user = new UsuariosEntity("Julieta", "Ramos", "44859420", "julieta@gmail.com");
@@ -45,24 +47,42 @@ public class Main {
         //System.out.println(usuariosRepository.findById(30).get()); //preguntar por que tira nosuchelementexception si la catcheo en el metodo!!!!!
         //System.out.println(cuentasRepository.findById(1).get());
         //System.out.println(credencialesRepository.findById(3).get());
-        crearCredencial(user);
+        //crearCredencial(user);
+
+
+
+        crearUsuario();
     }
 
-    public static void crearCredencial(UsuariosEntity usuario) {
-        int flag = 0;
-        String username = new String();
-        while (flag==0){
-            System.out.println("Ingrese un nombre de usuario: ");
-            username = scanner.nextLine();
-            if(credencialesService.verificarUsername(username)){
-                System.out.println("El usuario ya existe. Intente nuevamente."); //USAR EXCEPCIONES!!!!!
-            }
-            else flag=1;
-        }
-        System.out.println("Ingrese una contraseña: ");
-        String contraseña = scanner.nextLine();
-        ENUM_permiso permiso = ENUM_permiso.CLIENTE;
-        int id_usuario = usuario.getId();
-        credencialesService.agregarCredencial(new CredencialesEntity(id_usuario,username,contraseña,permiso));
+
+
+    public static void crearUsuario(){
+//        System.out.println("Ingrese su nombre: ");
+//        String nombre = scanner.nextLine();
+//        System.out.println("Ingrese su apellido: ");
+//        String apellido = scanner.nextLine();
+//        int flag = 0;
+//        String dni= new String();
+//        while (flag == 0){
+//            System.out.println("Ingrese su dni: ");
+//            dni = scanner.nextLine();
+//            if (usuariosService.verificarDni(dni)){
+//                System.out.println("El dni ingresado ya figura en el sistema. Ingrese uno nuevo. ");
+//            }else flag = 1;
+//        }
+//        String email = new String();
+//        flag = 0;
+//        while (flag == 0){
+//            System.out.println("Ingrese un email: ");
+//            email=scanner.nextLine();
+//            if(usuariosService.verificarEmail(email)){
+//                System.out.println("El email ingresado ya figura en el sistema. Ingrese uno nuevo.");
+//            }else flag = 1;
+//        }
+//        UsuariosEntity user = new UsuariosEntity(nombre,apellido,dni,email);
+        usuariosService.crearUsuario(); //agrego el usuario a la bbd
+        credencialesService.crearCredencial(usuariosService.ultimoUsuario());//creo y agrego la credencial del usuario a la bbd
+        cuentasService.agregarCuentaAhorro(usuariosService.ultimoUsuario());
+
     }
 }

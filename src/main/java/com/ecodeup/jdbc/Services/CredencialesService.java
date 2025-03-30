@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import static com.ecodeup.jdbc.Main.scanner;
+
 public class CredencialesService {
     private static CredencialesService instance;
     private UsuariosRepository usuariosRepository;
@@ -49,17 +51,26 @@ public class CredencialesService {
                 .anyMatch(c -> c.getId_usuario()==id_usuario);
     }
 
-    private CredencialesEntity crearCredencial(int id_usuario, String username, String password, ENUM_permiso permiso) {
-        CredencialesEntity credencial = new CredencialesEntity(id_usuario, username, password, permiso);
-        Optional<CredencialesEntity> credencialesExistentes = credencialesRepository
-                .findById(id_usuario);
-        if (credencialesExistentes.isPresent()){
-            return null;
+    public void crearCredencial(UsuariosEntity usuario) {
+        int flag = 0;
+        String username = new String();
+        while (flag==0){
+            System.out.println("Ingrese un nombre de usuario: ");
+            username = scanner.nextLine();
+            if(verificarUsername(username)){
+                System.out.println("El usuario ya existe. Intente nuevamente."); //USAR EXCEPCIONES!!!!!
+            }
+            else flag=1;
         }
-        else return credencial;
+        System.out.println("Ingrese una contraseña: ");
+        String contraseña = scanner.nextLine();
+        ENUM_permiso permiso = ENUM_permiso.CLIENTE;
+        int id_usuario = usuariosRepository.ultimoUsuarioRegistrado().getId();
+        agregarCredencial(new CredencialesEntity(id_usuario,username,contraseña,permiso));
+        System.out.println("Credencial guardada con exito.");
     }
 
-    public void agregarCredencial(CredencialesEntity credencial){
+    private void agregarCredencial(CredencialesEntity credencial){
         try{
             credencialesRepository.save(credencial);
         }catch (SQLException e){
