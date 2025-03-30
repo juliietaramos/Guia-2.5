@@ -9,5 +9,4 @@ public interface Repository <T>{
     public void deleteById (Integer id) throws SQLException;
     public ArrayList<T> findAll();
     public Optional<T> findById (Integer id);
-    public Integer count();
 }

@@ -107,8 +107,4 @@ public class CredencialesRepository implements Repository<CredencialesEntity> {
         return Optional.empty();
     }
 
-    @Override
-    public Integer count() {
-        return 0;
-    }
 }

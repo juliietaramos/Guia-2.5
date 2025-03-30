@@ -126,8 +126,5 @@ public class UsuariosRepository implements Repository<UsuariosEntity> {
         return Optional.empty();
     }
 
-    @Override
-    public Integer count() {
-        return 0;
-    }
+
 }

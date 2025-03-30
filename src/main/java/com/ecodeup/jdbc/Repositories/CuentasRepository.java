@@ -102,8 +102,5 @@ public class CuentasRepository implements Repository <CuentasEntity> {
         return Optional.empty();
     }
 
-    @Override
-    public Integer count() {
-        return 0;
-    }
+
 }
