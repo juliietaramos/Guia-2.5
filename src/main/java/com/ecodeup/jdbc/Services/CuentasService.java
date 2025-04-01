@@ -8,7 +8,9 @@ import com.ecodeup.jdbc.Repositories.CuentasRepository;
 import com.ecodeup.jdbc.Repositories.UsuariosRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CuentasService {
     private static CuentasService instance;
@@ -38,5 +40,27 @@ public class CuentasService {
         }catch (SQLException e){
             System.out.println("Error al agregar la cuenta. " + e.getMessage());
         }
+    }
+
+    public void elimiarCuenta (int id){
+        try {
+            cuentasRepository.deleteById(id);
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar la cuenta . " + e.getMessage());
+        }
+    }
+
+    public List<CuentasEntity> mostrarCuenta (int id){
+        List<CuentasEntity> listaCuentas = new ArrayList<>();
+        try{
+            listaCuentas = cuentasRepository.findAllById(id);
+            for(CuentasEntity cuentas : listaCuentas){
+                System.out.println(cuentas.toString());
+            }
+            return listaCuentas;
+        }catch (RuntimeException e){
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 }

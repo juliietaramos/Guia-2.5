@@ -11,10 +11,10 @@ import com.ecodeup.jdbc.Repositories.UsuariosRepository;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-import static com.ecodeup.jdbc.Main.scanner;
+import java.util.Scanner;
 
 public class CredencialesService {
+    private Scanner scanner = new Scanner(System.in);
     private static CredencialesService instance;
     private UsuariosRepository usuariosRepository;
     private CredencialesRepository credencialesRepository;
@@ -76,6 +76,26 @@ public class CredencialesService {
         }catch (SQLException e){
             System.out.println("Error al guardar la credencial " + e.getMessage());
         }
+    }
+
+    public void elimiarCredencial (int id){
+        try{
+            credencialesRepository.deleteById(id);
+        }catch (SQLException e){
+            System.out.println("Error al eliminar la credencial. " + e.getMessage());
+        }
+    }
+
+    public CredencialesEntity mostrarCredencial (int id){
+        try{
+            Optional<CredencialesEntity> credencialOpt = credencialesRepository.findById(id);
+            if(credencialOpt.isPresent()){
+                return credencialOpt.get();
+            }
+        } catch (RuntimeException e){
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 
 }
