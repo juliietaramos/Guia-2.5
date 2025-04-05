@@ -98,4 +98,19 @@ public class CredencialesService {
         return null;
     }
 
+    public boolean verificarPassword (String password){ //returna true si lo encuentra
+        return listaDeCredenciales
+                .stream()
+                .anyMatch(c -> c.getPassword().equals(password));
+    }
+
+    public int idCuenta (String username, String password){
+        return listaDeCredenciales
+                .stream()
+                .filter(c -> c.getUsername().equals(username) && c.getPassword().equals(password))
+                .map(c -> c.getId())
+                .toList()
+                .getFirst();
+    }
+
 }

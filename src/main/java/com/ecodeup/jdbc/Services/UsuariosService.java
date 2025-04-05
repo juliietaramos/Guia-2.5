@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static com.ecodeup.jdbc.Main.scanner;
 
 public class UsuariosService {
     private static UsuariosService instance;

@@ -13,14 +13,32 @@ public class Menu {
     private static UsuariosService usuariosService;
     private static CredencialesService credencialesService;
     private static CuentasService cuentasService;
+    private static UsuariosEntity usuarioEnLinea;
 
     public Menu() {
         this.usuariosService = UsuariosService.getInstanceOf();
         this.credencialesService = CredencialesService.getInstanceOf();
         this.cuentasService = CuentasService.getInstanceOf();
+        usuarioEnLinea = null;
     }
 
-    private static UsuariosEntity crearUsuario() {
+    public void menu(){
+        System.out.println("1. Registrarme.");
+        System.out.println("2. Iniciar sesion.");
+        int opcion = 0;
+        switch (opcion){
+            case 1:
+                System.out.println("Registrarme:");
+                usuarioEnLinea=guardarUsuario();
+                break;
+            case 2:
+                System.out.println("Iniciar sesion:");
+                usuarioEnLinea=iniciarSesion();
+                break;
+        }
+    }
+
+    private static UsuariosEntity crearUsuario() { //FUNCIONA BIEN :)
         System.out.println("Ingrese su nombre: ");
         String nombre = scanner.nextLine();
         System.out.println("Ingrese su apellido: ");
@@ -45,15 +63,44 @@ public class Menu {
             } else flag = 1;
         }
         return new UsuariosEntity(nombre, apellido, dni, email);
+    } //FUNCIONA BIEN :)
+
+    public UsuariosEntity iniciarSesion(){
+        boolean flag = false;
+        String user = new String();
+        String password = new String();
+        while (!flag){
+            System.out.println("Ingrese su usuario: ");
+            user = scanner.nextLine();
+            flag=credencialesService.verificarUsername(user);
+            if (!flag){
+                System.out.println("Usuario no encontrado. Intente nuevamente.");
+            }
+        }
+        flag=false;
+        while (!flag){
+            System.out.println("Ingrese su contraseña: ");
+            password = scanner.nextLine();
+            flag= credencialesService.verificarPassword(password);
+            if (!flag){
+                System.out.println("Contraseña incorrecta. Intente nuevamente.");
+            }
+        }
+        int id = credencialesService.idCuenta(user,password);
+        System.out.println("Usuario:");
+        System.out.println(usuariosService.mostrarUsuario(id).toString());
+
+        return usuariosService.mostrarUsuario(id);
     }
 
-    public void guardarUsuario() {
+    public UsuariosEntity guardarUsuario() {
         UsuariosEntity usuario = crearUsuario();
         usuariosService.crearUsuario(usuario);
         usuario.setId(usuariosService.ultimoUsuario().getId());
         credencialesService.crearCredencial(usuario);
         cuentasService.agregarCuentaAhorro(usuario);
-    }
+        return usuario;
+    } //FUNCIONA BIEN :)
 
     public void eliminarUsuario() {
         System.out.println("Ingrese el id del usuario a eliminar: ");
@@ -61,9 +108,9 @@ public class Menu {
         usuariosService.eliminarUsuario(id);
         credencialesService.elimiarCredencial(id);
         cuentasService.elimiarCuenta(id);
-    }
+    } //FUNCIONA BIEN :)
 
-    public void mostrarInformacionUsuario() {
+    public static void mostrarInformacionUsuario() {
         System.out.println("Ingrese el id: ");
         int id = scanner.nextInt();
         try {
@@ -81,7 +128,7 @@ public class Menu {
         }catch (NullPointerException e){
             System.out.println("No se encontraron cuentas asociadas al id ingresado.");
         }
-    }
+    } //FUNCIONA BIEN :)
 }
 
 
