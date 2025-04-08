@@ -42,9 +42,18 @@ public class CuentasService {
         }
     }
 
+    public void agregarCuentaCorriente (UsuariosEntity usuario){
+        try {
+            cuentasRepository.save(new CuentasEntity(usuario.getId(), ENUM_tipo.CUENTA_CORRIENTE,0.0));
+            System.out.println("Cuenta corriente creada con exito.");
+        } catch (SQLException e) {
+            System.out.println("Error al agregar la cuenta. " + e.getMessage());
+        }
+    }
+
     public void elimiarCuenta (int id){
         try {
-            cuentasRepository.deleteById(id);
+            cuentasRepository.deleteById(id); //elimina todas las cuentas del idusuario
         } catch (SQLException e) {
             System.out.println("Error al eliminar la cuenta . " + e.getMessage());
         }

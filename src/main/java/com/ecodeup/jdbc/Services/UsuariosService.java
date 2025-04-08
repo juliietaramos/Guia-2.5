@@ -31,6 +31,32 @@ public class UsuariosService {
         return instance;
     }
 
+    public List<UsuariosEntity> listarUsuarios() {
+        try {
+            listaDeUsuarios = usuariosRepository.findAll();
+            return listaDeUsuarios;
+        } catch (RuntimeException e) {
+            System.out.println("Ocurrio un error al listar los usuarios " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Optional<UsuariosEntity> filtrarUsuariosPorDni(String dni){
+        return listaDeUsuarios
+                .stream()
+                .filter(u -> u.getDni()
+                        .equals(dni))
+                .findFirst();
+    }
+
+    public Optional<UsuariosEntity> filtrarUsuariosPorMail(String mail){
+        return listaDeUsuarios
+                .stream()
+                .filter(u-> u.getEmail()
+                        .equals(mail))
+                .findFirst();
+    }
+
     private boolean verificarId_Usuario(int id_usuario) { //returna true si lo encuentra
         return listaDeUsuarios
                 .stream()
@@ -62,6 +88,7 @@ public class UsuariosService {
     private void agregarUsuario(UsuariosEntity usuario) {
         try {
             usuariosRepository.save(usuario);
+            this.listaDeUsuarios = usuariosRepository.findAll();
             System.out.println("Usuario registrado con exito.");
         } catch (SQLException e) {
             System.out.println("Error al guardar el usuario. " + e.getMessage());
@@ -71,6 +98,7 @@ public class UsuariosService {
     public void eliminarUsuario(int id) {
         try {
             usuariosRepository.deleteById(id);
+            this.listaDeUsuarios = usuariosRepository.findAll();
         } catch (SQLException e) {
             System.out.println("Error al eliminar el usuario. " + e.getMessage());
         }
