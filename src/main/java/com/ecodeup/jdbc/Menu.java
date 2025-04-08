@@ -95,20 +95,27 @@ public class Menu {
                     break;
                 case 4:
                     System.out.println("Eliminar un usuario."); //gestores (solo clientes), administradores (cualquier usuario)
-                    try{
+                    try {
                         eliminarUsuario();
                     } catch (NoAutorizadoException e) {
                         System.out.println(e.getMessage());
                     }
                     break;
                 case 5:
-                    System.out.println("5. Listar las cuentas de un usuario."); //clientes (solo sus propias cuentas), gestores y administradres (cuentas de cualquier usuario)
+                    System.out.println("Listar las cuentas de un usuario."); //clientes (solo sus propias cuentas), gestores y administradres (cuentas de cualquier usuario)
+                    try {
+                        listarCuentas();
+                    } catch (NoSuchElementException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 6:
-                    System.out.println("6. Obtener el saldo total de un usuario"); //clientes (solo su saldo), gestor y administrador (cualquier usuario)
+                    System.out.println("Obtener el saldo total de un usuario"); //clientes (solo su saldo), gestor y administrador (cualquier usuario)
+                    obtenerSaldoTotal();
                     break;
                 case 7:
-                    System.out.println("7. Realizar un deposito en una cuenta."); //clientes (cuentas propias), gestores (en cuentas de clientes), administradores (cualquier cuenta)
+                    System.out.println("Realizar un deposito en una cuenta."); //clientes (cuentas propias), gestores (en cuentas de clientes), administradores (cualquier cuenta)
+                    realizarDeposito();
                     break;
                 case 8:
                     System.out.println("8. Realizar una transferencia."); //clientes (entre sus propias cuentas o a otros), getores y administrativos (entre != usuarios)
@@ -224,7 +231,7 @@ public class Menu {
                 cuentasService.elimiarCuenta(id);
             }
         }
-    }
+    } //FUNCIONA BIEN
 
     public static void mostrarInformacionUsuario() {
         System.out.println("Ingrese el id: ");
@@ -282,6 +289,69 @@ public class Menu {
             }
         }
     } //FUNCIONA BIEN
+
+    private static void listarCuentas() throws NoSuchElementException {
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)) {
+            System.out.println(cuentasService.mostrarCuenta(usuarioEnLinea.get().getId()).toString());
+        } else {
+            //try {
+            System.out.println("Ingrese el id del usuario: ");
+            int id = scanner.nextInt();
+            scanner.nextLine();
+            List<CuentasEntity> listaCuentas = cuentasService.listarCuentasPoId(id);
+            if (listaCuentas.isEmpty()) {
+                throw new NoSuchElementException("No hay cuentas con el id ingresado.");
+            } else {
+                listaCuentas.forEach(System.out::println);
+            }
+        }
+    } //FUNCIONA BIEN
+
+    private static void obtenerSaldoTotal() {
+        /*CLIENTES pueden ver solo su saldo.
+● GESTORES y ADMINISTRADORES pueden ver el saldo de cualquier usuario.
+● Utilizar Stream y reduce para calcular el saldo total.*/
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)){
+            double saldo = cuentasService.contarSaldoPorId(usuarioEnLinea.get().getId());
+            System.out.println("El saldo total de su cuenta es: $" + saldo);
+        }
+        else {
+            try {
+                System.out.println("Ingrese el id del usuario: ");
+                int id_usuario = scanner.nextInt();
+                scanner.nextLine();
+                double saldo = cuentasService.contarSaldoPorId(id_usuario);
+                System.out.println("El saldo del usuario es de: $" + saldo);
+            }catch (NoSuchElementException e){
+                System.out.println("El usuario ingresado es incorrecto. " + e.getMessage());
+            }
+        }
+    } //FUNCIONA BIEN
+
+    private static void realizarDeposito (){
+        /*CLIENTES pueden depositar en sus propias cuentas.
+● GESTORES pueden depositar en cuentas de CLIENTES.
+● ADMINISTRADORES pueden depositar en cualquier cuenta.
+● Utilizar Optional para verificar la existencia de la cuenta.*/
+        ENUM_permiso permiso = verificarPermiso();
+        switch (permiso){
+            case CLIENTE -> {
+                listarCuentas();
+                System.out.println("Ingrese el id de la cuenta a depositar: ");
+                int id_cuenta = scanner.nextInt(); scanner.nextLine();
+                System.out.println("Ingrese el monto a depositar: ");
+                Double deposito = scanner.nextDouble(); scanner.nextLine();
+                while (deposito<=0){
+                    System.out.println("Ingrese un valor valido. ");
+                    deposito = scanner.nextDouble(); scanner.nextLine();
+                }
+                deposito = deposito + cuentasService.recuperarSaldo(id_cuenta);
+                cuentasService.modificarSaldo(id_cuenta,deposito);
+                System.out.println("Deposito realizado con exito.");
+                listarCuentas();
+            }
+        }
+    }
 
 }
 

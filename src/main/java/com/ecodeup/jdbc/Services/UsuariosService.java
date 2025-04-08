@@ -41,7 +41,7 @@ public class UsuariosService {
         return null;
     }
 
-    public Optional<UsuariosEntity> filtrarUsuariosPorDni(String dni){
+    public Optional<UsuariosEntity> filtrarUsuariosPorDni(String dni) {
         return listaDeUsuarios
                 .stream()
                 .filter(u -> u.getDni()
@@ -49,10 +49,10 @@ public class UsuariosService {
                 .findFirst();
     }
 
-    public Optional<UsuariosEntity> filtrarUsuariosPorMail(String mail){
+    public Optional<UsuariosEntity> filtrarUsuariosPorMail(String mail) {
         return listaDeUsuarios
                 .stream()
-                .filter(u-> u.getEmail()
+                .filter(u -> u.getEmail()
                         .equals(mail))
                 .findFirst();
     }
@@ -88,17 +88,21 @@ public class UsuariosService {
     private void agregarUsuario(UsuariosEntity usuario) {
         try {
             usuariosRepository.save(usuario);
-            this.listaDeUsuarios = usuariosRepository.findAll();
+            actualizarLista();
             System.out.println("Usuario registrado con exito.");
         } catch (SQLException e) {
             System.out.println("Error al guardar el usuario. " + e.getMessage());
         }
     }
 
+    private void actualizarLista() {
+        this.listaDeUsuarios = usuariosRepository.findAll();
+    }
+
     public void eliminarUsuario(int id) {
         try {
             usuariosRepository.deleteById(id);
-            this.listaDeUsuarios = usuariosRepository.findAll();
+            actualizarLista();
         } catch (SQLException e) {
             System.out.println("Error al eliminar el usuario. " + e.getMessage());
         }
