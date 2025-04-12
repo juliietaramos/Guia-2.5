@@ -19,17 +19,13 @@ public class CredencialesService {
     private UsuariosRepository usuariosRepository;
     private CredencialesRepository credencialesRepository;
     private CuentasRepository cuentasRepository;
-    private List<UsuariosEntity> listaDeUsuarios;
     private List<CredencialesEntity> listaDeCredenciales;
-    private List<CuentasEntity> listaDeCuentas;
 
     private CredencialesService (){
         this.usuariosRepository=UsuariosRepository.getInstanceOf();
         this.credencialesRepository=CredencialesRepository.getInstanceOf();
         this.cuentasRepository=CuentasRepository.getInstanceOf();
-        this.listaDeUsuarios=usuariosRepository.findAll();
         this.listaDeCredenciales=credencialesRepository.findAll();
-        this.listaDeCuentas=cuentasRepository.findAll();
     }
 
     public static CredencialesService getInstanceOf(){
@@ -37,6 +33,10 @@ public class CredencialesService {
             instance=new CredencialesService();
         }
         return instance;
+    }
+
+    public void actualizarLista (){
+        this.listaDeCredenciales = credencialesRepository.findAll();
     }
 
     public boolean verificarUsername(String username) { //retorna true si lo encuentra
@@ -73,6 +73,7 @@ public class CredencialesService {
     private void agregarCredencial(CredencialesEntity credencial){
         try{
             credencialesRepository.save(credencial);
+            actualizarLista();
         }catch (SQLException e){
             System.out.println("Error al guardar la credencial " + e.getMessage());
         }
@@ -81,6 +82,7 @@ public class CredencialesService {
     public void elimiarCredencial (int id){
         try{
             credencialesRepository.deleteById(id);
+            actualizarLista();
         }catch (SQLException e){
             System.out.println("Error al eliminar la credencial. " + e.getMessage());
         }
@@ -96,6 +98,10 @@ public class CredencialesService {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+
+    public List<CredencialesEntity> mostrarListaCredenciales (){
+        return credencialesRepository.findAll();
     }
 
     public boolean verificarPassword (String password){ //returna true si lo encuentra

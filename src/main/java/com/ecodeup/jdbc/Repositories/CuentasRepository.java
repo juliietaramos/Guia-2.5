@@ -129,16 +129,19 @@ public class CuentasRepository implements Repository<CuentasEntity> {
         return listaDeCuentas;
     }
 
-    public void modificarSaldo(int id_cuenta, Double deposito) {
+    public int modificarSaldo(int id_cuenta, Double deposito) {
         String sql = "UPDATE cuentas SET saldo = ? WHERE id_cuenta = ?;";
+        int filasModificadas;
         try(Connection connection = SQLiteConnection.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.setDouble(1, deposito);
             preparedStatement.setInt(2, id_cuenta);
-            int filasModificadas = preparedStatement.executeUpdate();
+            filasModificadas = preparedStatement.executeUpdate();
+            return filasModificadas;
         } catch (SQLException e) {
             System.out.println("Error al modificar el saldo de la cuenta. " + e.getMessage());
         }
+        return 0;
     }
 
 

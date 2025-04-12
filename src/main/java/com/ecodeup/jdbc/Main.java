@@ -7,8 +7,5 @@ public class Main {
         //GESTOR: carloslopez 1234
         //CLIENTE: julietaramos 44859420
         menu.menu();
-
     }
-
-
 }

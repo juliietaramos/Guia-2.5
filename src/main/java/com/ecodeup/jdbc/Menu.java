@@ -6,6 +6,7 @@ import com.ecodeup.jdbc.Exceptions.*;
 import com.ecodeup.jdbc.Services.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Menu {
@@ -118,19 +119,47 @@ public class Menu {
                     realizarDeposito();
                     break;
                 case 8:
-                    System.out.println("8. Realizar una transferencia."); //clientes (entre sus propias cuentas o a otros), getores y administrativos (entre != usuarios)
+                    System.out.println("Realizar una transferencia."); //clientes (entre sus propias cuentas o a otros), getores y administrativos (entre != usuarios)
+                    try {
+                        realizarTransferencia();
+                    } catch (NoAutorizadoException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 9:
-                    System.out.println("9. Obtener la cantidad de usuario por tipo de permiso."); //gestor y administrados.
+                    System.out.println("Obtener la cantidad de usuario por tipo de permiso."); //gestor y administrados.
+                    try {
+                        System.out.println(obtenerUsuariosPorPermiso());
+                    } catch (NoAutorizadoException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 10:
-                    System.out.println("10. Obtener la cantidad total de cuentas por tipo y mostrarlas."); //gestor y administrador
+                    System.out.println("Obtener la cantidad total de cuentas por tipo y mostrarlas."); //gestor y administrador
+                    try {
+                        System.out.println(obtenerCuentasPorTipo());
+                    } catch (NoAutorizadoException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 11:
-                    System.out.println("11. Obtener el usuario con mayor saldo total."); //solo administrador
+                    System.out.println("Obtener el usuario con mayor saldo total."); //solo administrador
+                    try{
+                        int idUsuario = obtenerUsuarioMayorSaldo();
+                        System.out.println(idUsuario);
+                        mostrarInformacionUsuario(idUsuario);
+                    } catch (NoAutorizadoException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 12:
-                    System.out.println("12. Listar los usuarios ordenados por su saldo total."); //de mayor a menor. // administrador
+                    System.out.println("Listar los usuarios ordenados por su saldo total."); //de mayor a menor. // administrador
+                    try{
+                        listarUsuariosPorSuSaldo().forEach(System.out::println);
+                        //System.out.println(listarUsuariosPorSuSaldo());
+                    } catch (NoAutorizadoException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
                 case 0:
                     System.out.println("0. Cerrar sesion.");
@@ -233,21 +262,19 @@ public class Menu {
         }
     } //FUNCIONA BIEN
 
-    public static void mostrarInformacionUsuario() {
-        System.out.println("Ingrese el id: ");
-        int id = scanner.nextInt();
+    public static void mostrarInformacionUsuario(int idUsuario) {
         try {
-            System.out.println(usuariosService.mostrarUsuario(id).toString());
+            System.out.println(usuariosService.mostrarUsuario(idUsuario).toString());
         } catch (NullPointerException e) {
             System.out.println("No se encontró un usuario con el id ingresado.");
         }
         try {
-            System.out.println(credencialesService.mostrarCredencial(id));
+            System.out.println(credencialesService.mostrarCredencial(idUsuario));
         } catch (NullPointerException e) {
             System.out.println("No se encontró la credencial del id ingresado.");
         }
         try {
-            cuentasService.mostrarCuenta(id).toString();
+            System.out.println(cuentasService.mostrarCuenta(idUsuario));
         } catch (NullPointerException e) {
             System.out.println("No se encontraron cuentas asociadas al id ingresado.");
         }
@@ -311,47 +338,214 @@ public class Menu {
         /*CLIENTES pueden ver solo su saldo.
 ● GESTORES y ADMINISTRADORES pueden ver el saldo de cualquier usuario.
 ● Utilizar Stream y reduce para calcular el saldo total.*/
-        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)){
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)) {
             double saldo = cuentasService.contarSaldoPorId(usuarioEnLinea.get().getId());
             System.out.println("El saldo total de su cuenta es: $" + saldo);
-        }
-        else {
+        } else {
             try {
                 System.out.println("Ingrese el id del usuario: ");
                 int id_usuario = scanner.nextInt();
                 scanner.nextLine();
                 double saldo = cuentasService.contarSaldoPorId(id_usuario);
                 System.out.println("El saldo del usuario es de: $" + saldo);
-            }catch (NoSuchElementException e){
+            } catch (NoSuchElementException e) {
                 System.out.println("El usuario ingresado es incorrecto. " + e.getMessage());
             }
         }
     } //FUNCIONA BIEN
 
-    private static void realizarDeposito (){
-        /*CLIENTES pueden depositar en sus propias cuentas.
-● GESTORES pueden depositar en cuentas de CLIENTES.
-● ADMINISTRADORES pueden depositar en cualquier cuenta.
-● Utilizar Optional para verificar la existencia de la cuenta.*/
+    private static void realizarDeposito() {
         ENUM_permiso permiso = verificarPermiso();
-        switch (permiso){
-            case CLIENTE -> {
-                listarCuentas();
-                System.out.println("Ingrese el id de la cuenta a depositar: ");
-                int id_cuenta = scanner.nextInt(); scanner.nextLine();
-                System.out.println("Ingrese el monto a depositar: ");
-                Double deposito = scanner.nextDouble(); scanner.nextLine();
-                while (deposito<=0){
-                    System.out.println("Ingrese un valor valido. ");
-                    deposito = scanner.nextDouble(); scanner.nextLine();
-                }
-                deposito = deposito + cuentasService.recuperarSaldo(id_cuenta);
-                cuentasService.modificarSaldo(id_cuenta,deposito);
-                System.out.println("Deposito realizado con exito.");
-                listarCuentas();
-            }
+        switch (permiso) {
+            case CLIENTE -> depositarClientes();
+            case GESTOR -> depositarGestor();
+            case ADMINISTRADOR -> depositarAdministrador();
+        }
+    } //FUNCIONA BIEN
+
+    private static void depositarAdministrador() {
+        try {
+            listarUsuariosDelSistema();
+        } catch (NoAutorizadoException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println("Ingrese el id del usuario que desea depositar: ");
+        int id_usuario = scanner.nextInt();
+        scanner.nextLine();
+        List<CuentasEntity> listaCuentas = cuentasService.listarCuentasPoId(id_usuario);
+        listaCuentas.forEach(System.out::println);
+        System.out.println("Ingrese el id de la cuenta a depositar: ");
+        int id_cuenta = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println("Ingrese el valor a depositar: ");
+        Double deposito = scanner.nextDouble();
+        scanner.nextLine();
+        while (deposito <= 0) {
+            System.out.println("Ingrese un valor valido. ");
+            deposito = scanner.nextDouble();
+            scanner.nextLine();
+        }
+        deposito = deposito + cuentasService.recuperarSaldo(id_cuenta);
+        cuentasService.modificarSaldo(id_cuenta, deposito);
+        System.out.println("Deposito realizado con exito.");
+        System.out.println(cuentasService.listarCuentasPoId(id_usuario));
+    } //FUNCIONA BIEN
+
+    private static void depositarGestor() {
+        try {
+            listarUsuariosDelSistema();
+        } catch (NoAutorizadoException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println("Ingrese el id del usuario que desea depositar: ");
+        int id_usuario = scanner.nextInt();
+        scanner.nextLine();
+
+        CredencialesEntity credencial = credencialesService.mostrarCredencial(id_usuario);
+        while (credencial == null || !credencial.getPermiso().equals(ENUM_permiso.CLIENTE)) {
+            System.out.println("Usuario inválido. Intente nuevamente.");
+            id_usuario = scanner.nextInt();
+            scanner.nextLine();
+            credencial = credencialesService.mostrarCredencial(id_usuario);
+        }
+        List<CuentasEntity> listaCuentas = cuentasService.listarCuentasPoId(id_usuario);
+        listaCuentas.forEach(System.out::println);
+        System.out.println("Ingrese el id de la cuenta a depositar: ");
+        int id_cuenta = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println("Ingrese el valor a depositar: ");
+        Double deposito = scanner.nextDouble();
+        scanner.nextLine();
+        while (deposito <= 0) {
+            System.out.println("Ingrese un valor valido. ");
+            deposito = scanner.nextDouble();
+            scanner.nextLine();
+        }
+        deposito = deposito + cuentasService.recuperarSaldo(id_cuenta);
+        cuentasService.modificarSaldo(id_cuenta, deposito);
+        System.out.println("Deposito realizado con exito.");
+        System.out.println(cuentasService.listarCuentasPoId(id_usuario));
+    } //FUNCIONA BIEN
+
+    private static void depositarClientes() {
+        listarCuentas();
+        System.out.println("Ingrese el id de la cuenta a depositar: ");
+        int id_cuenta = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println("Ingrese el monto a depositar: ");
+        Double deposito = scanner.nextDouble();
+        scanner.nextLine();
+        while (deposito <= 0) {
+            System.out.println("Ingrese un valor valido. ");
+            deposito = scanner.nextDouble();
+            scanner.nextLine();
+        }
+        deposito = deposito + cuentasService.recuperarSaldo(id_cuenta);
+        cuentasService.modificarSaldo(id_cuenta, deposito);
+        System.out.println("Deposito realizado con exito.");
+        listarCuentas();
+    } //FUNCIONA BIEN
+
+    private static void realizarTransferencia() throws NoAutorizadoException {
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)) {
+            listarCuentas(); //muestra info de las cuentas del cliente loggeado
+        } else {
+            cuentasService.mostarInfoCuentas(); // muestra info de todas las cuentas
+        }
+        System.out.println("Ingrese el id de la cuenta de la que quiera trasnferir: ");
+        int id_cuenta_inicio = scanner.nextInt();
+        scanner.nextLine();
+        System.out.println("Ingrese el monto a transferir: ");
+        Double monto = scanner.nextDouble();
+        scanner.nextLine();
+        while (cuentasService.recuperarSaldo(id_cuenta_inicio) < monto || monto <= 0) {
+            System.out.println("Ingrese un monto valido: ");
+            monto = scanner.nextDouble();
+            scanner.nextLine();
+        }
+        cuentasService.mostarInfoCuentas();
+        System.out.println("Ingrese el id de la cuenta a la que quiera transferir: ");
+        int id_cuenta_final = scanner.nextInt();
+        scanner.nextLine();
+        transferir(id_cuenta_inicio, id_cuenta_final, monto);
+
+
+    } //FUNCIONA BIEN
+
+    private static void transferir(int id_cuenta_inicio, int id_cuenta_final, Double transferencia) {
+        //transferencia = el monto que queda en la cuenta final
+        // saldo = monto que queda en la cuenta inicio
+        Double saldo = cuentasService.recuperarSaldo(id_cuenta_inicio) - transferencia;
+        transferencia = transferencia + cuentasService.recuperarSaldo(id_cuenta_final);
+        cuentasService.modificarSaldo(id_cuenta_inicio, saldo);
+        cuentasService.modificarSaldo(id_cuenta_final, transferencia);
+        System.out.println("Transferencia realizada con exito.");
+    } //FUNCIONA BIEN
+
+    private static Map<String, Long> obtenerUsuariosPorPermiso() throws NoAutorizadoException {
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)) throw new NoAutorizadoException();
+        else {
+            List<CredencialesEntity> listaCredenciales = credencialesService.mostrarListaCredenciales();
+            return listaCredenciales
+                    .stream()
+                    .collect(Collectors
+                            .groupingBy(c -> c.getPermiso().toString(), Collectors.counting()));
+        }
+    } //FUNCIONA BIEN
+
+    private static Map<String, Long> obtenerCuentasPorTipo() throws NoAutorizadoException {
+        if (verificarPermiso().equals(ENUM_permiso.CLIENTE)) throw new NoAutorizadoException();
+        else {
+            List<CuentasEntity> listaCuentas = cuentasService.mostrarListaCuentas();
+            return listaCuentas
+                    .stream()
+                    .collect(Collectors.groupingBy(c -> c.getTipo().toString(), Collectors.counting()));
         }
     }
+
+    private static int obtenerUsuarioMayorSaldo() throws NoAutorizadoException {
+        if (verificarPermiso().equals(ENUM_permiso.ADMINISTRADOR)) {
+            Double saldoMaximo = cuentasService
+                    .mostrarListaCuentas()
+                    .stream()
+                    .mapToDouble(c -> c.getSaldo())
+                    .max()
+                    .orElse(0);
+            System.out.println("Saldo maximo: " + saldoMaximo);
+            return  cuentasService
+                    .mostrarListaCuentas()
+                    .stream()
+                    .filter(c-> Objects.equals(c.getSaldo(), saldoMaximo))
+                    .map(c->c.getId_usuario())
+                    .findFirst()
+                    .orElse(0);
+        } else throw new NoAutorizadoException();
+    }
+
+    private static List<UsuariosEntity> listarUsuariosPorSuSaldo() throws NoAutorizadoException {
+        // Verifica si el usuario tiene permiso de ADMINISTRADOR
+        if (verificarPermiso().equals(ENUM_permiso.ADMINISTRADOR)) {
+            // Agrupa las cuentas por ID de usuario y calcula el saldo total por usuario
+            Map<Integer, Double> saldoPorUsuario = cuentasService.mostrarListaCuentas()
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            c -> c.getId_usuario(), // Agrupa por ID de usuario
+                            Collectors.summingDouble(c -> c.getSaldo()) // Suma los saldos de las cuentas de ese usuario
+                    ));
+
+            // Ordena los usuarios por su saldo total (de mayor a menor)
+            // Luego convierte cada ID de usuario en su objeto UsuariosEntity correspondiente
+            return saldoPorUsuario.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<Integer, Double>comparingByValue(Comparator.reverseOrder())) // Ordena por saldo descendente
+                    .map(entry -> usuariosService.mostrarUsuario(entry.getKey())) // Obtiene el usuario a partir de su ID
+                    .filter(Objects::nonNull) // Filtra posibles nulls (por si algún usuario no existe)
+                    .collect(Collectors.toList()); // Devuelve la lista final de usuarios ordenados por saldo
+        } else {
+            throw new NoAutorizadoException();
+        }
+    }
+
 
 }
 
