@@ -1,4 +1,4 @@
-package com.ecodeup.jdbc;
+package com.ecodeup.jdbc.UI;
 
 public class Main {
     public static void main(String[] args)  {

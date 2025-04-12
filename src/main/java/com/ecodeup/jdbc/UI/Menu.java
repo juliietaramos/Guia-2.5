@@ -1,4 +1,4 @@
-package com.ecodeup.jdbc;
+package com.ecodeup.jdbc.UI;
 
 import com.ecodeup.jdbc.Entities.*;
 import com.ecodeup.jdbc.Enum.*;
